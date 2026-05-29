@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast Bot Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #2f3136;
+            --panel-color: #36393f;
+            --accent-color: #5865F2;
+            --text-color: #dcddde;
+            --input-bg: #202225;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--panel-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        h1 { color: #fff; text-align: center; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: 1px solid #18191c;
+            border-radius: 4px;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        textarea { resize: vertical; height: 100px; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+        button:hover { background: #4752C4; }
+        .preview-panel {
+            background: #2f3136;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid var(--accent-color);
+        }
+        .preview-title { font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .preview-gif { max-width: 100%; margin-top: 10px; border-radius: 4px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📢 Broadcast Control Panel</h1>
+    
+    <div class="grid">
+        <div class="inputs">
+            <div class="form-group">
+                <label>Normal Message Text</label>
+                <textarea id="normalText" placeholder="Type standard text here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Embed Title</label>
+                <input type="text" id="embedTitle" placeholder="Announcement Title">
+            </div>
+            <div class="form-group">
+                <label>Embed Description</label>
+                <textarea id="embedDesc" placeholder="Main body of the embed box..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>GIF or Image URL</label>
+                <input type="text" id="gifUrl" placeholder="https://media.giphy.com/... .gif">
+            </div>
+            <button onclick="sendBroadcast()">🚀 Send Broadcast</button>
+        </div>
+
+        <div class="preview">
+            <label>Live Preview</label>
+            <div id="textPreview" style="margin-bottom: 10px; white-space: pre-wrap;"></div>
+            <div class="preview-panel" id="embedPreview">
+                <div class="preview-title" id="pTitle">Embed Title Preview</div>
+                <div id="pDesc">Embed description preview text goes right here.</div>
+                <img id="pGif" class="preview-gif" src="" alt="GIF Preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const normalText = document.getElementById('normalText');
+    const embedTitle = document.getElementById('embedTitle');
+    const embedDesc = document.getElementById('embedDesc');
+    const gifUrl = document.getElementById('gifUrl');
+
+    function updatePreview() {
+        document.getElementById('textPreview').innerText = normalText.value;
+        document.getElementById('pTitle').innerText = embedTitle.value || "Embed Title Preview";
+        document.getElementById('pDesc').innerText = embedDesc.value || "Embed description preview...";
+        
+        const gifImg = document.getElementById('pGif');
+        if(gifUrl.value) {
+            gifImg.src = gifUrl.value;
+            gifImg.style.display = "block";
+        } else {
+            gifImg.style.display = "none";
+        }
+    }
+
+    [normalText, embedTitle, embedDesc, gifUrl].forEach(item => {
+        item.addEventListener('input', updatePreview);
+    });
+
+    async function sendBroadcast() {
+        // CONFIGURATION: Replace with your actual Pterodactyl node IP/URL and your allocated port
+        const BACKEND_URL = "http://92.118.206.166:30319/api/broadcast";
+
+        const payload = {
+            normal_text: normalText.value,
+            embed_title: embedTitle.value,
+            embed_desc: embedDesc.value,
+            gif_url: gifUrl.value
+        };
+
+        try {
+            const response = await fetch(BACKEND_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                alert("🚀 Broadcast instructions sent successfully! Check your main server log channel when complete.");
+            } else {
+                alert("❌ Backend accepted connection but returned an error.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("❌ Could not connect to the bot backend. Verify your Pterodactyl IP, random port, and check if the bot is online.");
+        }
+    }
+</script>
+</body>
+</html>
