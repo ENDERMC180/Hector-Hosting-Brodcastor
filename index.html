@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Broadcast Bot Dashboard</title>
+    <title>Advanced Embed Control Panel</title>
     <style>
         :root {
             --bg-color: #2f3136;
             --panel-color: #36393f;
-            --accent-color: #5865F2;
+            --accent-color: #00b0f4;
             --text-color: #dcddde;
             --input-bg: #202225;
+            --border-color: #18191c;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -23,121 +24,303 @@
         }
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             background: var(--panel-color);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            padding: 25px;
+            border-radius: 5px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
-        h1 { color: #fff; text-align: center; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            background: var(--input-bg);
-            border: 1px solid #18191c;
+        h2 { color: #fff; margin-bottom: 20px; font-weight: 400; font-size: 22px;}
+        .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; }
+        
+        /* Layout styling matching user image */
+        .action-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .btn-blue { background: #009688; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600;}
+        .btn-text { color: #00b0f4; background: none; border: none; cursor: pointer; }
+        .btn-danger { background: #f04747; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;}
+        
+        .embed-builder-box {
+            border: 1px solid #202225;
+            background: #2f3136;
+            padding: 20px;
             border-radius: 4px;
-            color: #fff;
-            box-sizing: border-box;
         }
-        textarea { resize: vertical; height: 100px; }
-        button {
+        .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .input-row input { flex: 1; }
+        
+        input, textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            color: #fff;
+            border-radius: 3px;
+            font-size: 14px;
+            box-sizing: border-box;
             width: 100%;
-            padding: 12px;
-            background: var(--accent-color);
+        }
+        textarea { height: 90px; resize: vertical; }
+        .char-counter { font-size: 11px; color: #72767d; margin-top: 2px; }
+        
+        .add-field-btn {
+            background: #4f545c;
             color: white;
             border: none;
+            width: 100%;
+            padding: 10px;
             border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 15px;
+            margin: 10px 0;
+            font-weight: 600;
         }
-        button:hover { background: #4752C4; }
-        .preview-panel {
+        .field-block {
+            background: #202225;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 3px solid #7289da;
+        }
+        
+        /* Discord Message UI Preview */
+        .discord-preview { background: #36393f; padding: 15px; border-radius: 4px; }
+        .normal-text-out { margin-bottom: 10px; font-size: 15px; color: #dcddde; white-space: pre-wrap;}
+        .embed-card {
             background: #2f3136;
+            border-left: 4px solid var(--accent-color);
             padding: 15px;
             border-radius: 4px;
-            border-left: 4px solid var(--accent-color);
+            max-width: 520px;
         }
-        .preview-title { font-weight: bold; color: #fff; margin-bottom: 5px; }
-        .preview-gif { max-width: 100%; margin-top: 10px; border-radius: 4px; display: none; }
+        .author-area { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #fff;}
+        .author-icon-img { width: 24px; height: 24px; border-radius: 50%; display: none; }
+        .embed-title-out { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; text-decoration: none; display: block;}
+        .embed-desc-out { font-size: 14px; color: #dcddde; white-space: pre-wrap; }
+        .preview-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .f-item h4 { margin: 0 0 4px 0; color: #fff; font-size: 14px;}
+        .f-item p { margin: 0; color: #dcddde; font-size: 13px;}
+        .img-large { width: 100%; max-height: 300px; object-fit: contain; border-radius: 4px; margin-top: 10px; display: none; }
+        .img-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; float: right; display: none; margin-left: 10px;}
+        .footer-area { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; color: #72767d; clear: both;}
+        .footer-icon-img { width: 20px; height: 20px; border-radius: 50%; display: none;}
+        
+        .main-controls { display: flex; gap: 15px; margin-top: 20px;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📢 Broadcast Control Panel</h1>
+    <h2>Welcome message embed builder</h2>
     
+    <div class="action-bar">
+        <input type="color" id="embedColor" value="#5865F2" style="width:50px; padding:0; height:35px; border:none; cursor:pointer;">
+        <button class="btn-blue">Toggle color picker</button>
+        <span class="btn-text">Advanced</span>
+        <button class="btn-text" style="margin-left: auto;" onclick="clearAll()">Clear</button>
+    </div>
+
     <div class="grid">
-        <div class="inputs">
-            <div class="form-group">
-                <label>Normal Message Text</label>
-                <textarea id="normalText" placeholder="Type standard text here..."></textarea>
+        <div class="inputs-column">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">NORMAL MESSAGE CONTENT</label>
+                <textarea id="normalText" placeholder="Normal message text above the embed box..."></textarea>
             </div>
-            <div class="form-group">
-                <label>Embed Title</label>
-                <input type="text" id="embedTitle" placeholder="Announcement Title">
+            
+            <div class="embed-builder-box">
+                <div class="input-row">
+                    <input type="text" id="authIcon" placeholder="Icon url">
+                    <input type="text" id="authName" placeholder="Author Name">
+                    <input type="text" id="authUrl" placeholder="Author url">
+                </div>
+                
+                <div class="input-row">
+                    <input type="text" id="titleText" placeholder="Title">
+                    <input type="text" id="titleUrl" style="max-width: 120px;" placeholder="Title url">
+                </div>
+                <div class="char-counter" style="margin-bottom:12px;">0/200</div>
+                
+                <textarea id="descText" placeholder="Description"></textarea>
+                <div class="char-counter">0/2048</div>
+                
+                <button class="add-field-btn" onclick="addFieldBlock()">+ Add field</button>
+                <div class="char-counter" style="margin-bottom:12px;">0/25 fields</div>
+                <div id="dynamicFieldsContainer"></div>
+                
+                <div class="input-row">
+                    <input type="text" id="bigImgUrl" placeholder="Image url (big at the bottom)">
+                    <input type="text" id="thumbUrl" placeholder="Thumbnail url (small top right)">
+                </div>
+                
+                <div class="input-row">
+                    <input type="text" id="footText" placeholder="Footer text">
+                    <input type="text" id="footIcon" placeholder="Footer icon url">
+                </div>
+                <div class="char-counter">0/2048</div>
             </div>
-            <div class="form-group">
-                <label>Embed Description</label>
-                <textarea id="embedDesc" placeholder="Main body of the embed box..."></textarea>
+            
+            <div class="main-controls">
+                <button class="btn-blue" style="background:#00b0f4;" onclick="sendDataToBot()">Save & Send Broadcast</button>
+                <button class="btn-danger" onclick="clearAll()">Clear</button>
             </div>
-            <div class="form-group">
-                <label>GIF or Image URL</label>
-                <input type="text" id="gifUrl" placeholder="https://media.giphy.com/... .gif">
-            </div>
-            <button onclick="sendBroadcast()">🚀 Send Broadcast</button>
         </div>
 
-        <div class="preview">
-            <label>Live Preview</label>
-            <div id="textPreview" style="margin-bottom: 10px; white-space: pre-wrap;"></div>
-            <div class="preview-panel" id="embedPreview">
-                <div class="preview-title" id="pTitle">Embed Title Preview</div>
-                <div id="pDesc">Embed description preview text goes right here.</div>
-                <img id="pGif" class="preview-gif" src="" alt="GIF Preview">
+        <div class="preview-column">
+            <label style="font-size: 12px; font-weight: bold; margin-bottom: 10px; display: block;">LIVE RENDERING PREVIEW</label>
+            <div class="discord-preview">
+                <div class="normal-text-out" id="viewNormal"></div>
+                
+                <div class="embed-card" id="viewCard">
+                    <img class="img-thumb" id="viewThumb" src="" alt="">
+                    
+                    <div class="author-area" id="viewAuthRow" style="display:none;">
+                        <img class="author-icon-img" id="viewAuthIcon" src="" alt="">
+                        <span id="viewAuthName"></span>
+                    </div>
+                    
+                    <a class="embed-title-out" id="viewTitle" href="#" target="_blank" style="display:none;"></a>
+                    <div class="embed-desc-out" id="viewDesc"></div>
+                    
+                    <div class="preview-fields" id="viewFieldsArea"></div>
+                    
+                    <img class="img-large" id="viewLargeImg" src="" alt="">
+                    
+                    <div class="footer-area" id="viewFootRow" style="display:none;">
+                        <img class="footer-icon-img" id="viewFootIcon" src="" alt="">
+                        <span id="viewFootText"></span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const normalText = document.getElementById('normalText');
-    const embedTitle = document.getElementById('embedTitle');
-    const embedDesc = document.getElementById('embedDesc');
-    const gifUrl = document.getElementById('gifUrl');
+    // Live Event Listeners for Preview
+    const inputs = ['normalText','embedColor','authIcon','authName','authUrl','titleText','titleUrl','descText','bigImgUrl','thumbUrl','footText','footIcon'];
+    inputs.forEach(id => document.getElementById(id).addEventListener('input', updateLivePreview));
 
-    function updatePreview() {
-        document.getElementById('textPreview').innerText = normalText.value;
-        document.getElementById('pTitle').innerText = embedTitle.value || "Embed Title Preview";
-        document.getElementById('pDesc').innerText = embedDesc.value || "Embed description preview...";
+    function updateLivePreview() {
+        const color = document.getElementById('embedColor').value;
+        document.getElementById('viewCard').style.borderColor = color;
         
-        const gifImg = document.getElementById('pGif');
-        if(gifUrl.value) {
-            gifImg.src = gifUrl.value;
-            gifImg.style.display = "block";
-        } else {
-            gifImg.style.display = "none";
-        }
+        // Text blocks
+        document.getElementById('viewNormal').innerText = document.getElementById('normalText').value;
+        document.getElementById('viewDesc').innerText = document.getElementById('descText').value;
+        
+        // Title handling
+        const titleText = document.getElementById('titleText').value;
+        const titleUrl = document.getElementById('titleUrl').value;
+        const viewTitle = document.getElementById('viewTitle');
+        if(titleText) {
+            viewTitle.innerText = titleText;
+            viewTitle.href = titleUrl || "#";
+            viewTitle.style.display = "block";
+        } else { viewTitle.style.display = "none"; }
+        
+        // Author handling
+        const authName = document.getElementById('authName').value;
+        const authIcon = document.getElementById('authIcon').value;
+        const viewAuthRow = document.getElementById('viewAuthRow');
+        if(authName) {
+            document.getElementById('viewAuthName').innerText = authName;
+            const iconImg = document.getElementById('viewAuthIcon');
+            if(authIcon) { iconImg.src = authIcon; iconImg.style.display="block"; } else { iconImg.style.display="none"; }
+            viewAuthRow.style.display = "flex";
+        } else { viewAuthRow.style.display = "none"; }
+        
+        // Images handling
+        const thumb = document.getElementById('thumbUrl').value;
+        const viewThumb = document.getElementById('viewThumb');
+        if(thumb) { viewThumb.src = thumb; viewThumb.style.display="block"; } else { viewThumb.style.display="none"; }
+        
+        const largeImg = document.getElementById('bigImgUrl').value;
+        const viewLargeImg = document.getElementById('viewLargeImg');
+        if(largeImg) { viewLargeImg.src = largeImg; viewLargeImg.style.display="block"; } else { viewLargeImg.style.display="none"; }
+        
+        // Footer handling
+        const footText = document.getElementById('footText').value;
+        const footIcon = document.getElementById('footIcon').value;
+        const viewFootRow = document.getElementById('viewFootRow');
+        if(footText) {
+            document.getElementById('viewFootText').innerText = footText;
+            const fIcon = document.getElementById('viewFootIcon');
+            if(footIcon) { fIcon.src = footIcon; fIcon.style.display="block"; } else { fIcon.style.display="none"; }
+            viewFootRow.style.display = "flex";
+        } else { viewFootRow.style.display = "none"; }
+
+        renderDynamicFieldsPreview();
     }
 
-    [normalText, embedTitle, embedDesc, gifUrl].forEach(item => {
-        item.addEventListener('input', updatePreview);
-    });
+    // Handle Custom Embedded Fields
+    let fieldCount = 0;
+    function addFieldBlock() {
+        if(document.querySelectorAll('.field-block').length >= 25) return alert("Discord limit is 25 fields!");
+        fieldCount++;
+        const container = document.getElementById('dynamicFieldsContainer');
+        const div = document.createElement('div');
+        div.className = 'field-block';
+        div.id = `fBlock_${fieldCount}`;
+        div.innerHTML = `
+            <div class="input-row">
+                <input type="text" placeholder="Field Name" class="f-name" oninput="updateLivePreview()">
+                <input type="text" placeholder="Field Value" class="f-val" oninput="updateLivePreview()">
+            </div>
+            <label style="font-size:11px;"><input type="checkbox" class="f-inline" onchange="updateLivePreview()"> Inline Field</label>
+            <button class="btn-text" style="color:#f04747; padding:0; margin-left:10px;" onclick="document.getElementById('fBlock_${fieldCount}').remove(); updateLivePreview();">Remove</button>
+        `;
+        container.appendChild(div);
+        updateLivePreview();
+    }
 
-    async function sendBroadcast() {
-        // CONFIGURATION: Replace with your actual Pterodactyl node IP/URL and your allocated port
+    function renderDynamicFieldsPreview() {
+        const area = document.getElementById('viewFieldsArea');
+        area.innerHTML = '';
+        document.querySelectorAll('.field-block').forEach(block => {
+            const name = block.querySelector('.f-name').value;
+            const val = block.querySelector('.f-val').value;
+            const isInline = block.querySelector('.f-inline').checked;
+            if(name || val) {
+                const item = document.createElement('div');
+                item.className = 'f-item';
+                if(!isInline) item.style.gridColumn = "1 / -1";
+                item.innerHTML = `<h4>${name || 'Field Title'}</h4><p>${val || 'Field Value'}</p>`;
+                area.appendChild(item);
+            }
+        });
+    }
+
+    function clearAll() {
+        inputs.forEach(id => document.getElementById(id).value = '');
+        document.getElementById('dynamicFieldsContainer').innerHTML = '';
+        updateLivePreview();
+    }
+
+    // Send payload straight to Pterodactyl Backend Host
+    async function sendDataToBot() {
+        // ⚠️ EDIT THIS URL WITH YOUR PTERODACTYL ALLOCATED IP AND ASSIGNED RANDOM PORT
         const BACKEND_URL = "http://92.118.206.166:30319/api/broadcast";
 
+        const fieldsArray = [];
+        document.querySelectorAll('.field-block').forEach(block => {
+            fieldsArray.push({
+                name: block.querySelector('.f-name').value,
+                value: block.querySelector('.f-val').value,
+                inline: block.querySelector('.f-inline').checked
+            });
+        });
+
         const payload = {
-            normal_text: normalText.value,
-            embed_title: embedTitle.value,
-            embed_desc: embedDesc.value,
-            gif_url: gifUrl.value
+            normal_text: document.getElementById('normalText').value,
+            color: document.getElementById('embedColor').value,
+            author_name: document.getElementById('authName').value,
+            author_icon: document.getElementById('authIcon').value,
+            author_url: document.getElementById('authUrl').value,
+            title: document.getElementById('titleText').value,
+            title_url: document.getElementById('titleUrl').value,
+            description: document.getElementById('descText').value,
+            image_url: document.getElementById('bigImgUrl').value,
+            thumbnail_url: document.getElementById('thumbUrl').value,
+            footer_text: document.getElementById('footText').value,
+            footer_icon: document.getElementById('footIcon').value,
+            fields: fieldsArray
         };
 
         try {
@@ -146,17 +329,13 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            
-            if (response.ok) {
-                alert("🚀 Broadcast instructions sent successfully! Check your main server log channel when complete.");
-            } else {
-                alert("❌ Backend accepted connection but returned an error.");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("❌ Could not connect to the bot backend. Verify your Pterodactyl IP, random port, and check if the bot is online.");
+            if(response.ok) alert("🚀 Advanced embed sent into processing loop!");
+        } catch (e) {
+            alert("❌ Failed to reach bot backend panel. Check configuration addresses.");
         }
     }
+    // Run initial execution once on page start
+    updateLivePreview();
 </script>
 </body>
 </html>
